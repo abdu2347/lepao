@@ -86,13 +86,13 @@
 </head>
 <body>
     <div class="login-card">
-        <h1>🏃 乐跑数据</h1>
-        <p class="subtitle">生成器 - 用户登录</p>
+        <h1>跑步数据生成器</h1>
+        <p class="subtitle">用户登录</p>
         <div class="alert alert-danger" id="errorMsg" role="alert"></div>
         <form id="loginForm">
             <div class="mb-3">
-                <label class="form-label">用户名</label>
-                <input type="text" class="form-control" id="username" placeholder="请输入用户名" required autofocus>
+                <label class="form-label">QQ号</label>
+                <input type="text" class="form-control" id="username" placeholder="请输入QQ号" required autofocus>
             </div>
             <div class="mb-3">
                 <label class="form-label">密码</label>
@@ -140,7 +140,6 @@
             }
         });
 
-        // Enter键提交
         document.getElementById('password').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') document.getElementById('loginForm').dispatchEvent(new Event('submit'));
         });
