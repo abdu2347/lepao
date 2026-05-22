@@ -1,0 +1,15 @@
+lepao.db
+__pycache__/
+*.pyc
+tunnel.log
+server.log
+dist/
+build/
+*.spec
+启动服务.ps1
+启动服务.vbs
+一键启动.bat
+启动隧道.bat
+ngrok.exe
+ngrok.yml
+cloudflared.exe

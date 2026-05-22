@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乐跑数据生成器</title>
+    {% if username %}<!-- 模板变量注入 -->{% endif %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --accent-color: #e74c3c;
+    --background-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    --card-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    --hover-transform: translateY(-3px);
+}
+
+body {
+    background: var(--background-gradient);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    backdrop-filter: blur(10px);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid var(--primary-color);
+    position: relative;
+}
+
+.header h1 {
+    color: var(--primary-color);
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    color: #7f8c8d;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.time-form-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.time-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.time-form:hover {
+    transform: var(--hover-transform);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.time-form h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.time-form h3::before {
+    content: "🏃";
+    margin-right: 10px;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.8rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    transform: scale(1.02);
+}
+
+.form-control.is-invalid {
+    border-color: var(--accent-color);
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    padding-right: 2.5rem;
+}
+
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: var(--accent-color);
+}
+
+.form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+.buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-success {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.btn:hover {
+    transform: var(--hover-transform);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+.remove-time {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* 价格标签 */
+.price-tag {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    padding: 1.2rem 2rem;
+    border-radius: 50px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(238, 90, 36, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.price-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.price-label {
+    font-size: 1.1rem;
+    color: #fff;
+    font-weight: 500;
+}
+
+.price-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffd700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.price-divider {
+    width: 2px;
+    height: 30px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 2px;
+}
+
+/* 联系信息区域 */
+.contact-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-top: 2rem;
+    color: white;
+    text-align: center;
+}
+
+.contact-section h3 {
+    color: white;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-section h3::before {
+    content: "📦";
+    margin-right: 10px;
+}
+
+.contact-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+.wechat-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.wechat-info .wechat-id {
+    font-size: 1.2rem;
+    font-weight: bold;
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.wechat-info .wechat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.wechat-qr {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    background: white;
+    padding: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.wechat-qr img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.service-info {
+    background: rgba(255,255,255,0.15);
+    padding: 1.5rem;
+    border-radius: 12px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.service-info p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.service-info .highlight {
+    font-weight: bold;
+    color: #ffd700;
+}
+
+/* 页脚 */
+
+/* 教程按钮 */
+.tutorial-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.tutorial-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(155, 89, 182, 0.5);
+}
+
+.tutorial-btn::before {
+    content: "?";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    margin-right: 8px;
+    font-size: 12px;
+}
+
+/* 教程弹窗 */
+.tutorial-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.tutorial-modal.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.tutorial-content {
+    background: white;
+    border-radius: 20px;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    margin: 20px;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.tutorial-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.tutorial-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tutorial-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.tutorial-close:hover {
+    background: rgba(255,255,255,0.3);
+    transform: rotate(90deg);
+}
+
+.tutorial-body {
+    padding: 25px;
+}
+
+.tutorial-section {
+    margin-bottom: 25px;
+}
+
+.tutorial-section h3 {
+    color: #667eea;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tutorial-section h3 .step-num {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.tutorial-section p {
+    color: #555;
+    line-height: 1.8;
+    margin: 0;
+}
+
+.tutorial-section ul {
+    margin: 10px 0;
+    padding-left: 25px;
+}
+
+.tutorial-section li {
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 8px;
+}
+
+.tutorial-section li strong {
+    color: #e74c3c;
+}
+
+.tutorial-tip {
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+    border-left: 4px solid #f39c12;
+    padding: 15px;
+    border-radius: 0 8px 8px 0;
+    margin: 15px 0;
+}
+
+.tutorial-tip p {
+    margin: 0;
+    color: #856404;
+}
+
+.tutorial-warning {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border-left: 4px solid #dc3545;
+    padding: 15px;
+    border-radius: 0 8px 8px 0;
+    margin: 15px 0;
+}
+
+.tutorial-warning p {
+    margin: 0;
+    color: #721c24;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        margin: 0.5rem auto;
+        padding: 1rem;
+        border-radius: 15px;
+        max-width: 100%;
+    }
+
+    .time-form-container {
+        padding: 0.8rem;
+    }
+
+    .time-form {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .time-form h3 {
+        font-size: 1.1rem;
+    }
+
+    .row {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .row > [class*="col-"],
+    .row > .col {
+        flex: 0 0 calc(33.333% - 0.34rem);
+        max-width: calc(33.333% - 0.34rem);
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        padding: 0.4rem 0.3rem;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    label {
+        font-size: 12px;
+        text-align: center;
+        display: block;
+    }
+
+    .buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        font-size: 14px;
+    }
+
+    .header {
+        margin-bottom: 1rem;
+        padding-bottom: 0.8rem;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .contact-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .wechat-info {
+        align-items: center;
+    }
+
+    .wechat-qr {
+        width: 100px;
+        height: 100px;
+    }
+
+    .price-display {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.8rem;
+    }
+
+    .price-item {
+        padding: 0.4rem 0.8rem;
+        font-size: 13px;
+    }
+
+    .price-label {
+        font-size: 12px;
+    }
+
+    .price-value {
+        font-size: 14px;
+    }
+
+    .service-info {
+        text-align: center;
+    }
+
+    .service-info p {
+        font-size: 13px;
+        margin: 0.3rem 0;
+    }
+
+    .tutorial-btn {
+        top: 8px;
+        right: 8px;
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .tutorial-content {
+        max-height: 92vh;
+        margin: 5px;
+    }
+
+    .tutorial-header {
+        padding: 12px 15px;
+    }
+
+    .tutorial-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .tutorial-body {
+        padding: 15px;
+    }
+
+    .tutorial-section h3 {
+        font-size: 1rem;
+    }
+
+    .tutorial-section p,
+    .tutorial-section li {
+        font-size: 13px;
+    }
+
+    .credit-section {
+        margin: 1rem auto;
+        padding: 0 10px;
+    }
+
+    .credit-content {
+        padding: 12px;
+    }
+
+    .credit-text {
+        font-size: 13px;
+    }
+
+    .credit-logo img {
+        height: 24px;
+    }
+}
+
+/* 底部备注 */
+.credit-section {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 20px;
+}
+
+.credit-content {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.credit-text {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.credit-text p {
+    margin: 0;
+}
+
+.credit-logo {
+    display: inline-block;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.credit-logo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+.credit-logo img {
+    height: 30px;
+    width: auto;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .credit-section {
+        margin: 1rem auto;
+        padding: 0 10px;
+    }
+
+    .credit-content {
+        padding: 15px;
+    }
+
+    .credit-text {
+        font-size: 0.85rem;
+    }
+
+    .credit-logo img {
+        height: 24px;
+    }
+}
+
+/* 价格表图片预览 */
+.price-table-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.price-table-modal.active {
+    display: flex;
+}
+
+.price-table-preview {
+    max-width: 50vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    cursor: default;
+    animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.price-table-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    line-height: 1;
+}
+
+.price-table-close:hover {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .price-table-preview {
+        max-width: 85vw;
+        max-height: 70vh;
+    }
+
+    .price-table-close {
+        top: 15px;
+        right: 20px;
+        font-size: 30px;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- 教程按钮 -->
+    <button class="tutorial-btn" onclick="openTutorial()">使用教程</button>
+
+    <!-- 教程弹窗 -->
+    <div class="tutorial-modal" id="tutorialModal">
+        <div class="tutorial-content">
+            <div class="tutorial-header">
+                <h2>📖 使用教程</h2>
+                <button class="tutorial-close" onclick="closeTutorial()">×</button>
+            </div>
+            <div class="tutorial-body">
+                <div class="tutorial-section">
+                    <h3><span class="step-num">1</span> 在网页添加跑步时间</h3>
+                    <p>在网页上设置你需要的跑步时间（年、月、日、时、分、秒）。</p>
+                    <ul>
+                        <li>点击「添加更多时间」可批量添加多条记录</li>
+                        <li>新增的时间默认年份为当前年份，月份跟随上一条</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3><span class="step-num">2</span> 生成并下载TCX文件</h3>
+                    <p>点击「生成TCX文件」按钮，浏览器会下载 <strong>.tcx</strong> 文件。</p>
+                    <ul>
+                        <li>如果添加了<strong>1个时间</strong>：直接下载1个.tcx文件</li>
+                        <li>如果添加了<strong>多个时间</strong>：会逐个下载多个.tcx文件（每个约300ms间隔）</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3><span class="step-num">3</span> 在电脑上将多个文件打包</h3>
+                    <p>生成多个记录后，建议在电脑上操作：</p>
+                    <ul>
+                        <li>浏览器下载的多个.tcx文件会保存在<strong>下载文件夹</strong></li>
+                        <li>新建一个文件夹，将所有.tcx文件放入</li>
+                        <li>右键文件夹 →「发送到」→「压缩(zipped)文件夹」</li>
+                        <li>或者用<strong>7-Zip</strong>、<strong>WinRAR</strong>等软件压缩</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3><span class="step-num">4</span> 手机连接电脑传输文件</h3>
+                    <p>用数据线将手机连接到电脑，或使用以下方式传输文件：</p>
+                    <ul>
+                        <li>微信/QQ文件传输助手（电脑端发消息给手机端）</li>
+                        <li>蓝牙传输</li>
+                        <li>邮箱发送给自己</li>
+                    </ul>
+                    <p>将压缩包传到<strong>手机存储</strong>中，然后解压备用。</p>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3><span class="step-num">5</span> Keep导入TCX文件</h3>
+                    <p>打开手机<strong>Keep</strong> APP，按以下步骤操作：</p>
+                    <ul>
+                        <li>点击底部「<strong>运动</strong>」</li>
+                        <li>点击右上角「<strong>...</strong>」更多</li>
+                        <li>选择「<strong>导入外部训练</strong>」</li>
+                        <li>找到并选择解压后的 <strong>.tcx</strong> 文件</li>
+                        <li>等待导入完成</li>
+                    </ul>
+                </div>
+
+                <div class="tutorial-tip">
+                    <p><strong>💡 提示：</strong>建议在电脑上批量生成和压缩.tcx文件，再用微信文件传输助手发到手机，比直接在手机上操作更方便。</p>
+                </div>
+
+                <div class="tutorial-warning">
+                    <p><strong>⚠️ 注意：</strong>确保Keep账号已登录，导入的记录会显示在你的运动历史中。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="position:fixed;top:20px;left:20px;z-index:1000;display:flex;gap:0.5rem;">
+        {% if session.is_admin %}
+        <a href="/admin" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:600;font-size:13px;box-shadow:0 4px 15px rgba(155,89,182,0.4);">🛡️ 管理后台</a>
+        {% endif %}
+        <a href="/logout" style="background:#e74c3c;color:white;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:600;font-size:13px;box-shadow:0 4px 15px rgba(231,76,60,0.4);">退出</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>乐跑数据生成器</h1>
+            <p class="subtitle">生成专业的跑步TCX文件</p>
+        </div>
+
+        <div class="time-form-container">
+            <div id="time-forms">
+                <div class="time-form">
+                    <h3>跑步时间 #1</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>年</label>
+                                <input type="number" class="form-control year" min="2000" max="2100" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>月</label>
+                                <input type="number" class="form-control month" min="1" max="12" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>日</label>
+                                <input type="number" class="form-control day" min="1" max="31" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>时</label>
+                                <input type="number" class="form-control hour" min="0" max="23" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>分</label>
+                                <input type="number" class="form-control minute" min="0" max="59" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>秒</label>
+                                <input type="number" class="form-control second" min="0" max="59" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger remove-time" style="display: none;">删除</button>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button id="add-time" class="btn btn-primary">添加更多时间</button>
+                <button id="generate" class="btn btn-success">生成TCX文件</button>
+            </div>
+        </div>
+
+        <!-- 代取快递联系信息 -->
+        <div class="contact-section">
+            <h3>代取快递服务</h3>
+            <div class="price-tag">
+                <div class="price-item">
+                    <span class="price-label">小件</span>
+                    <span class="price-value">2元</span>
+                </div>
+                <div class="price-divider"></div>
+                <div class="price-item">
+                    <span class="price-label">大件</span>
+                    <span class="price-value">3-5元</span>
+                </div>
+            </div>
+            <div class="contact-content">
+                <div class="wechat-info">
+                    <span class="wechat-label">微信联系</span>
+                    <span class="wechat-id" id="wechat-id" style="cursor:pointer;" title="点击复制">19816278865</span>
+                    <div class="wechat-qr">
+                        <img src="wx.jpg" alt="微信二维码" onerror="this.parentElement.innerHTML='<span style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:12px;\'>微信二维码<br>wx.jpg</span>'">
+                    </div>
+                </div>
+                <div class="service-info">
+                    <p><span class="highlight">服务范围：</span>校内快递代取</p>
+                    <p><span class="highlight">服务时间：</span>全天可接单</p>
+                    <p><span class="highlight">联系方式：</span>微信同号</p>
+                    <p style="margin-top:1rem;opacity:0.8;font-size:0.9rem;">如有需要请扫描上方二维码或添加微信</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部备注 -->
+    <div class="credit-section">
+        <div class="credit-content">
+            <div class="credit-text">
+                <p>本站点由</p>
+                <span class="credit-logo" onclick="openPriceTable()">
+                    <img src="价格表.jpg" alt="价格表" onerror="this.style.display='none'">
+                </span>
+                <p>制作 · 仅供学习交流使用</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 价格表图片预览 -->
+    <div class="price-table-modal" id="priceTableModal" onclick="closePriceTable()">
+        <span class="price-table-close" onclick="closePriceTable()">×</span>
+        <img class="price-table-preview" id="priceTableImg" src="价格表.jpg" alt="价格表" onclick="event.stopPropagation()">
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+<script>
+// 教程弹窗函数
+function openTutorial() {
+    document.getElementById('tutorialModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTutorial() {
+    document.getElementById('tutorialModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// 价格表图片预览
+function openPriceTable() {
+    document.getElementById('priceTableModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePriceTable() {
+    document.getElementById('priceTableModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// 点击弹窗外部关闭
+document.getElementById('tutorialModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeTutorial();
+    }
+});
+
+// ESC键关闭
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeTutorial();
+        closePriceTable();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const timeForms = document.getElementById('time-forms');
+    const addTimeBtn = document.getElementById('add-time');
+    const generateBtn = document.getElementById('generate');
+    let formCount = 1;
+
+    // 点击复制微信
+    const wechatId = document.getElementById('wechat-id');
+    if (wechatId) {
+        wechatId.addEventListener('click', function() {
+            navigator.clipboard.writeText('19816278865').then(function() {
+                const originalText = wechatId.textContent;
+                wechatId.textContent = '已复制!';
+                wechatId.style.background = 'rgba(46, 204, 113, 0.6)';
+                setTimeout(function() {
+                    wechatId.textContent = originalText;
+                    wechatId.style.background = '';
+                }, 1500);
+            }).catch(function() {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = '19816278865';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                const originalText = wechatId.textContent;
+                wechatId.textContent = '已复制!';
+                wechatId.style.background = 'rgba(46, 204, 113, 0.6)';
+                setTimeout(function() {
+                    wechatId.textContent = originalText;
+                    wechatId.style.background = '';
+                }, 1500);
+            });
+        });
+    }
+
+    // 验证时间输入
+    function validateTimeInput(input) {
+        const value = parseInt(input.value);
+        const min = parseInt(input.min);
+        const max = parseInt(input.max);
+        
+        if (isNaN(value) || value < min || value > max) {
+            input.classList.add('is-invalid');
+            return false;
+        }
+        input.classList.remove('is-invalid');
+        return true;
+    }
+
+    // 验证整个表单
+    function validateForm(form) {
+        let isValid = true;
+        const inputs = form.querySelectorAll('input');
+        
+        inputs.forEach(input => {
+            if (!validateTimeInput(input)) {
+                isValid = false;
+            }
+        });
+
+        // 验证月份和日期
+        const year = parseInt(form.querySelector('.year').value);
+        const month = parseInt(form.querySelector('.month').value);
+        const day = parseInt(form.querySelector('.day').value);
+        
+        if (isValid) {
+            const lastDay = new Date(year, month, 0).getDate();
+            if (day > lastDay) {
+                form.querySelector('.day').classList.add('is-invalid');
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    // 添加新的时间表单
+    addTimeBtn.addEventListener('click', function() {
+        formCount++;
+        const newForm = document.querySelector('.time-form').cloneNode(true);
+        newForm.querySelector('h3').textContent = `跑步时间 #${formCount}`;
+        newForm.querySelector('.remove-time').style.display = 'block';
+        
+        // 清空输入值，年份默认2026，月份跟随第一个表单
+        const firstFormYear = document.querySelector('.time-form .year').value || 2026;
+        const firstFormMonth = document.querySelector('.time-form .month').value || '';
+        const inputs = newForm.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.classList.remove('is-invalid');
+            if (input.classList.contains('year')) {
+                input.value = firstFormYear;
+            } else if (input.classList.contains('month')) {
+                input.value = firstFormMonth;
+            } else {
+                input.value = '';
+            }
+        });
+        
+        timeForms.appendChild(newForm);
+    });
+
+    // 删除时间表单
+    timeForms.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-time')) {
+            if (formCount > 1) {
+                e.target.closest('.time-form').remove();
+                formCount--;
+                
+                // 更新剩余表单的标题
+                const forms = document.querySelectorAll('.time-form');
+                forms.forEach((form, index) => {
+                    form.querySelector('h3').textContent = `跑步时间 #${index + 1}`;
+                });
+            }
+        }
+    });
+
+    // 输入验证
+    timeForms.addEventListener('input', function(e) {
+        if (e.target.classList.contains('form-control')) {
+            validateTimeInput(e.target);
+        }
+    });
+
+    // ==================== TCX生成核心逻辑 ====================
+    
+    function pad(num, size = 2) {
+        let s = num + '';
+        while (s.length < size) s = '0' + s;
+        return s;
+    }
+
+    function isoDateTime(year, month, day, hour, minute, second) {
+        return `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:${pad(second)}`;
+    }
+
+    // 生成单个TCX文件内容
+    function generateTcx(startTime) {
+        const year = startTime.year;
+        const month = startTime.month;
+        const day = startTime.day;
+        const hour = startTime.hour;
+        const minute = startTime.minute;
+        const second = startTime.second;
+        
+        // 核心参数：总时间严格锁定14-18分钟
+        const totalSeconds = Math.floor(Math.random() * 241) + 840; // 840-1080秒
+        const singleLapDistance = 400.0;
+        const totalLaps = Math.round((Math.random() * 0.8 + 5.2) * 100) / 100; // 5.2-6圈
+        const totalDistance = Math.round(totalLaps * singleLapDistance * 100) / 100;
+        
+        // 每圈配速
+        const intLaps = Math.floor(totalLaps);
+        const lapTimeList = [];
+        let remainingSeconds = totalSeconds;
+        for (let i = 0; i < intLaps; i++) {
+            if (i === intLaps - 1) {
+                lapTimeList.push(remainingSeconds);
+            } else {
+                const lapT = Math.floor(Math.random() * 51) + 135; // 135-185秒
+                lapTimeList.push(lapT);
+                remainingSeconds -= lapT;
+            }
+        }
+        
+        // 处理小数圈
+        const fractionalLap = totalLaps - intLaps;
+        let finalTotalSeconds = totalSeconds;
+        if (fractionalLap > 0) {
+            finalTotalSeconds = lapTimeList.reduce((a, b) => a + b, 0) + lapTimeList[lapTimeList.length - 1] * fractionalLap;
+        }
+        
+        // 跑道参数
+        const pointsPerLap = 120;
+        const nPoints = Math.floor(pointsPerLap * totalLaps);
+        const straightLength = 100.0;
+        const curveLength = 100.0;
+        const radiusMeters = curveLength / Math.PI;
+        
+        // GPS基准坐标
+        const baseCenterLat = 34.197550;
+        const baseCenterLon = 117.173188;
+        const meterToDegLat = 1 / 111111.0;
+        const meterToDegLon = 1 / (111111.0 * Math.cos(baseCenterLat * Math.PI / 180));
+        
+        // 每圈独立偏移
+        const lapOffsets = [];
+        for (let i = 0; i < Math.ceil(totalLaps); i++) {
+            lapOffsets.push({
+                lat: (Math.random() * 4 - 2) * meterToDegLat,
+                lon: (Math.random() * 4 - 2) * meterToDegLon
+            });
+        }
+        
+        // 随机变道
+        const changeLapCount = Math.floor(Math.random() * 2) + 1;
+        const changeLaps = [];
+        for (let i = 0; i < changeLapCount && i < Math.ceil(totalLaps); i++) {
+            changeLaps.push(Math.floor(Math.random() * Math.ceil(totalLaps)));
+        }
+        
+        // 心率数据
+        const pointsHR = [];
+        for (let i = 0; i <= nPoints; i++) {
+            const x = nPoints > 0 ? i / nPoints : 0;
+            let hr = 75 + Math.floor(45 * (1 - Math.cos(x * Math.PI))) + Math.floor(Math.random() * 11) - 5;
+            hr = Math.max(75, Math.min(130, hr));
+            pointsHR.push(hr);
+        }
+        
+        // 跑道分段
+        const s1End = straightLength;
+        const c1End = straightLength + curveLength;
+        const s2End = straightLength + curveLength + straightLength;
+        const c2End = singleLapDistance;
+        
+        const dt = nPoints > 0 ? finalTotalSeconds / nPoints : 1.0;
+        
+        // 构建TCX XML
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2 http://www.garmin.com/xmlschemas/TrainingCenterDatabasev2.xsd">\n';
+        xml += '  <Activities>\n';
+        xml += '    <Activity Sport="Running">\n';
+        xml += `      <Id>${isoDateTime(year, month, day, hour, minute, second)}</Id>\n`;
+        xml += `      <Lap StartTime="${isoDateTime(year, month, day, hour, minute, second)}">\n`;
+        xml += `        <TotalTimeSeconds>${Math.round(finalTotalSeconds * 100) / 100}</TotalTimeSeconds>\n`;
+        xml += `        <DistanceMeters>${totalDistance}</DistanceMeters>\n`;
+        xml += '        <Intensity>Active</Intensity>\n';
+        xml += '        <TriggerMethod>Manual</TriggerMethod>\n';
+        xml += '        <Track>\n';
+        
+        for (let i = 0; i <= nPoints; i++) {
+            const currentTotalDist = i < nPoints ? totalDistance * i / nPoints : totalDistance;
+            let currentLapDist = currentTotalDist % singleLapDistance;
+            if (Math.abs(currentLapDist) < 0.0001 && currentTotalDist > 0) {
+                currentLapDist = c2End;
+            }
+            
+            const currentLapIdx = Math.floor(currentTotalDist / singleLapDistance);
+            const lapOffset = lapOffsets[Math.min(currentLapIdx, lapOffsets.length - 1)];
+            const centerLat = baseCenterLat + lapOffset.lat;
+            const centerLon = baseCenterLon + lapOffset.lon;
+            
+            const lonRadOff = radiusMeters * meterToDegLon;
+            const latHalfStraight = (straightLength / 2.0) * meterToDegLat;
+            const northCurveLat = centerLat + latHalfStraight;
+            const southCurveLat = centerLat - latHalfStraight;
+            const startLat = southCurveLat;
+            const startLon = centerLon - lonRadOff;
+            
+            let lat = 0, lon = 0;
+            const isChangeLap = changeLaps.includes(currentLapIdx);
+            
+            if (currentLapDist >= 0 && currentLapDist < s1End) {
+                // 西侧直道
+                const progress = currentLapDist / straightLength;
+                lat = startLat + progress * (northCurveLat - southCurveLat);
+                lon = startLon;
+                if (isChangeLap && currentLapDist > 20 && currentLapDist < 80) {
+                    lon -= 0.6 * meterToDegLon;
+                }
+            } else if (currentLapDist >= s1End && currentLapDist < c1End) {
+                // 北侧弯道
+                const distOnCurve = currentLapDist - s1End;
+                const angleRad = (distOnCurve / curveLength) * Math.PI;
+                const currentAngle = Math.PI - angleRad;
+                lat = northCurveLat + (radiusMeters * meterToDegLat) * Math.sin(currentAngle);
+                lon = centerLon + (radiusMeters * meterToDegLon) * Math.cos(currentAngle);
+            } else if (currentLapDist >= c1End && currentLapDist < s2End) {
+                // 东侧直道
+                const distOnStraight = currentLapDist - c1End;
+                const progress = distOnStraight / straightLength;
+                lat = northCurveLat - progress * (northCurveLat - southCurveLat);
+                lon = centerLon + lonRadOff;
+                if (isChangeLap && currentLapDist > 220 && currentLapDist < 280) {
+                    lon += 0.6 * meterToDegLon;
+                }
+            } else if (currentLapDist >= s2End && currentLapDist <= c2End) {
+                // 南侧弯道
+                let distOnCurve = currentLapDist - s2End;
+                distOnCurve = Math.max(0, Math.min(distOnCurve, curveLength));
+                const angleRad = (distOnCurve / curveLength) * Math.PI;
+                const currentAngle = 2 * Math.PI - angleRad;
+                lat = southCurveLat + (radiusMeters * meterToDegLat) * Math.sin(currentAngle);
+                lon = centerLon + (radiusMeters * meterToDegLon) * Math.cos(currentAngle);
+                if (Math.abs(currentLapDist - c2End) < 0.0001) {
+                    lat = startLat;
+                    lon = startLon;
+                }
+            }
+            
+            // 添加GPS噪声
+            lat += (Math.random() * 0.4 - 0.2) * meterToDegLat;
+            lon += (Math.random() * 0.4 - 0.2) * meterToDegLon;
+            
+            // 计算时间
+            const pointTime = new Date(year, month - 1, day, hour, minute, second);
+            pointTime.setSeconds(pointTime.getSeconds() + dt * i);
+            const timeStr = isoDateTime(
+                pointTime.getFullYear(),
+                pointTime.getMonth() + 1,
+                pointTime.getDate(),
+                pointTime.getHours(),
+                pointTime.getMinutes(),
+                pointTime.getSeconds()
+            );
+            
+            xml += '          <Trackpoint>\n';
+            xml += `            <Time>${timeStr}</Time>\n`;
+            xml += '            <Position>\n';
+            xml += `              <LatitudeDegrees>${lat.toFixed(8)}</LatitudeDegrees>\n`;
+            xml += `              <LongitudeDegrees>${lon.toFixed(8)}</LongitudeDegrees>\n`;
+            xml += '            </Position>\n';
+            xml += `            <DistanceMeters>${currentTotalDist.toFixed(2)}</DistanceMeters>\n`;
+            xml += '            <HeartRateBpm>\n';
+            xml += `              <Value>${pointsHR[i]}</Value>\n`;
+            xml += '            </HeartRateBpm>\n';
+            xml += '          </Trackpoint>\n';
+        }
+        
+        xml += '        </Track>\n';
+        xml += '      </Lap>\n';
+        xml += '    </Activity>\n';
+        xml += '  </Activities>\n';
+        xml += '</TrainingCenterDatabase>';
+        
+        return xml;
+    }
+
+    // 下载单个TCX文件
+    function downloadTcx(tcxContent, filename) {
+        const blob = new Blob([tcxContent], { type: 'application/xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
+        a.remove();
+    }
+
+    // 下载多个TCX文件（逐个下载）
+    function downloadMultipleTcx(files) {
+        files.forEach((file, index) => {
+            setTimeout(() => {
+                downloadTcx(file.content, file.name);
+            }, index * 300); // 每隔300ms下载一个，避免浏览器阻止
+        });
+    }
+
+    // 生成TCX文件
+    generateBtn.addEventListener('click', function() {
+        const forms = document.querySelectorAll('.time-form');
+        const times = [];
+        let isValid = true;
+
+        forms.forEach(form => {
+            if (!validateForm(form)) {
+                isValid = false;
+                return;
+            }
+
+            const year = parseInt(form.querySelector('.year').value);
+            const month = parseInt(form.querySelector('.month').value);
+            const day = parseInt(form.querySelector('.day').value);
+            const hour = parseInt(form.querySelector('.hour').value);
+            const minute = parseInt(form.querySelector('.minute').value);
+            const second = parseInt(form.querySelector('.second').value);
+
+            times.push({ year, month, day, hour, minute, second });
+        });
+
+        if (!isValid) {
+            alert('请检查输入的时间是否有效');
+            return;
+        }
+
+        if (times.length === 1) {
+            const tcx = generateTcx(times[0]);
+            const t = times[0];
+            // 文件名格式：0503 22-00
+            const filename = `${pad(t.month)}${pad(t.day)} ${pad(t.hour)}：${pad(t.minute)}.tcx`;
+            downloadTcx(tcx, filename);
+        } else {
+            // 直接下载多个TCX文件，不打包
+            times.forEach(t => {
+                const tcx = generateTcx(t);
+                const filename = `${pad(t.month)}${pad(t.day)} ${pad(t.hour)}：${pad(t.minute)}.tcx`;
+                downloadTcx(tcx, filename);
+            });
+        }
+    });
+
+    // CRC32表
+    const crc32Table = (function() {
+        const table = new Uint32Array(256);
+        for (let i = 0; i < 256; i++) {
+            let c = i;
+            for (let j = 0; j < 8; j++) {
+                c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            }
+            table[i] = c;
+        }
+        return table;
+    })();
+
+    // 计算CRC32
+    function crc32(data) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < data.length; i++) {
+            crc = crc32Table[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    // 使用pako创建标准ZIP（DEFLATE压缩）
+    async function createStandardZip(files) {
+        const encoder = new TextEncoder();
+        const records = [];
+
+        // 第一遍：处理文件并计算偏移量
+        let dataOffset = 0;
+        for (const file of files) {
+            const nameBytes = encoder.encode(file.name);
+            const contentBytes = encoder.encode(file.content);
+            
+            // 使用pako压缩内容
+            const compressedContent = pako.deflate(contentBytes);
+            
+            const localSize = 30 + nameBytes.length + compressedContent.length;
+            const cdSize = 46 + nameBytes.length;
+
+            records.push({
+                name: nameBytes,
+                content: contentBytes,
+                compressedContent: new Uint8Array(compressedContent),
+                localSize: localSize,
+                cdSize: cdSize,
+                dataOffset: dataOffset,
+                crc: crc32(contentBytes)
+            });
+
+            dataOffset += localSize;
+        }
+
+        const cdOffset = dataOffset;
+        let cdTotalSize = 0;
+        const chunks = [];
+
+        // 添加本地文件头和压缩内容
+        for (const rec of records) {
+            const localHeader = new Uint8Array(30 + rec.name.length + rec.compressedContent.length);
+            const view = new DataView(localHeader.buffer);
+
+            view.setUint32(0, 0x04034b50, true);
+            view.setUint16(4, 20, true);
+            view.setUint16(6, 0, true);
+            view.setUint16(8, 8, true); // 压缩方法：8 = DEFLATE
+            view.setUint16(10, 0, true);
+            view.setUint16(12, 0, true);
+            view.setUint32(14, rec.crc, true);
+            view.setUint32(18, rec.compressedContent.length, true);
+            view.setUint32(22, rec.content.length, true);
+            view.setUint16(26, rec.name.length, true);
+            view.setUint16(28, 0, true);
+
+            localHeader.set(rec.name, 30);
+            localHeader.set(rec.compressedContent, 30 + rec.name.length);
+
+            chunks.push(localHeader);
+        }
+
+        // 添加中央目录
+        for (const rec of records) {
+            const cdEntry = new Uint8Array(46 + rec.name.length);
+            const cdView = new DataView(cdEntry.buffer);
+
+            cdView.setUint32(0, 0x02014b50, true);
+            cdView.setUint16(4, 20, true);
+            cdView.setUint16(6, 20, true);
+            cdView.setUint16(8, 0, true);
+            cdView.setUint16(10, 8, true); // 压缩方法：8 = DEFLATE
+            cdView.setUint16(12, 0, true);
+            cdView.setUint16(14, 0, true);
+            cdView.setUint32(16, rec.crc, true);
+            cdView.setUint32(20, rec.compressedContent.length, true);
+            cdView.setUint32(24, rec.content.length, true);
+            cdView.setUint16(28, rec.name.length, true);
+            cdView.setUint16(30, 0, true);
+            cdView.setUint16(32, 0, true);
+            cdView.setUint16(34, 0, true);
+            cdView.setUint16(36, 0, true);
+            cdView.setUint32(38, 0, true);
+            cdView.setUint32(42, rec.dataOffset, true);
+
+            cdEntry.set(rec.name, 46);
+
+            chunks.push(cdEntry);
+            cdTotalSize += cdEntry.length;
+        }
+
+        // 添加中央目录结束
+        const endRecord = new Uint8Array(22);
+        const endView = new DataView(endRecord.buffer);
+        endView.setUint32(0, 0x06054b50, true);
+        endView.setUint16(4, 0, true);
+        endView.setUint16(6, 0, true);
+        endView.setUint16(8, records.length, true);
+        endView.setUint16(10, records.length, true);
+        endView.setUint32(12, cdTotalSize, true);
+        endView.setUint32(16, cdOffset, true);
+        endView.setUint16(20, 0, true);
+
+        chunks.push(endRecord);
+
+        return new Blob(chunks, { type: 'application/zip' });
+    }
+
+    // 设置当前时间为默认值
+    const now = new Date();
+    const firstForm = document.querySelector('.time-form');
+    firstForm.querySelector('.year').value = now.getFullYear();
+    firstForm.querySelector('.month').value = now.getMonth() + 1;
+    firstForm.querySelector('.day').value = now.getDate();
+    firstForm.querySelector('.hour').value = now.getHours();
+    firstForm.querySelector('.minute').value = now.getMinutes();
+    firstForm.querySelector('.second').value = now.getSeconds();
+});
+    </script>
+</body>
+</html>

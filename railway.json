@@ -1,0 +1,10 @@
+# 乐跑数据生成器 - Run on Railway
+
+build:
+  builder: Nixpacks
+  nixpacksPlan:
+    pkgs: []
+    apt: []
+    pip: requirements.txt
+
+startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers=2 --timeout=120

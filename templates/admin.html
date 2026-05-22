@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 乐跑数据生成器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header h1 { color: #1e3c72; font-weight: 800; margin: 0; font-size: 1.6rem; }
+        .header .nav-links { display: flex; gap: 0.8rem; }
+        .header .nav-links a {
+            padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none;
+            font-weight: 600; transition: all 0.3s;
+        }
+        .btn-home { background: #3498db; color: white; }
+        .btn-home:hover { background: #2980b9; }
+        .btn-logout { background: #e74c3c; color: white; }
+        .btn-logout:hover { background: #c0392b; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card .stat-number { font-size: 2.2rem; font-weight: 800; color: #1e3c72; }
+        .stat-card .stat-label { color: #7f8c8d; font-size: 0.9rem; margin-top: 0.3rem; }
+        .stat-card.today-gen .stat-number { color: #2ecc71; }
+        .stat-card.today-users .stat-number { color: #3498db; }
+        .stat-card.total-users .stat-number { color: #9b59b6; }
+        .stat-card.total-gen .stat-number { color: #e67e22; }
+        .chart-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .chart-card h3 { color: #1e3c72; font-weight: 700; margin-bottom: 1rem; font-size: 1.2rem; }
+        .table-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .table-card h3 { color: #1e3c72; font-weight: 700; margin-bottom: 1rem; font-size: 1.2rem; }
+        .table-card h3 .sub { font-size: 0.85rem; font-weight: 400; color: #999; }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #f8f9fa; color: #555; font-weight: 600;
+            padding: 0.75rem; text-align: left; border-bottom: 2px solid #e9ecef;
+            white-space: nowrap;
+        }
+        td { padding: 0.65rem; border-bottom: 1px solid #e9ecef; vertical-align: middle; }
+        .badge-admin { background: #e74c3c; color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; }
+        .badge-user { background: #3498db; color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; }
+        .badge-disabled { background: #95a5a6; color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; }
+        .limit-input {
+            width: 60px; text-align: center; border: 1px solid #ddd;
+            border-radius: 6px; padding: 4px; font-size: 0.85rem;
+        }
+        .limit-input:focus { border-color: #3498db; outline: none; }
+        .btn-sm {
+            padding: 4px 12px; font-size: 0.8rem; border-radius: 6px;
+            border: none; cursor: pointer; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-sm:hover { opacity: 0.85; }
+        .btn-danger-sm { background: #e74c3c; color: white; }
+        .btn-success-sm { background: #2ecc71; color: white; }
+        .btn-warning-sm { background: #f39c12; color: white; }
+        .btn-save-sm { background: #3498db; color: white; }
+        .action-group { display: flex; gap: 4px; flex-wrap: nowrap; }
+        .toast {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            background: #2ecc71; color: white; padding: 12px 24px;
+            border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: 600; display: none; animation: slideIn 0.3s;
+        }
+        .toast.error { background: #e74c3c; }
+        @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 1rem; text-align: center; }
+            th, td { font-size: 0.8rem; padding: 0.5rem; }
+            .limit-input { width: 45px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ 管理后台</h1>
+            <div class="nav-links">
+                <a href="/" class="btn-home">🏃 生成器</a>
+                <a href="/logout" class="btn-logout">退出</a>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card today-gen">
+                <div class="stat-number" id="todayGen">-</div>
+                <div class="stat-label">今日生成次数</div>
+            </div>
+            <div class="stat-card today-users">
+                <div class="stat-number" id="todayUsers">-</div>
+                <div class="stat-label">今日活跃用户</div>
+            </div>
+            <div class="stat-card total-users">
+                <div class="stat-number" id="totalUsers">-</div>
+                <div class="stat-label">总注册用户</div>
+            </div>
+            <div class="stat-card total-gen">
+                <div class="stat-number" id="totalGen">-</div>
+                <div class="stat-label">总生成次数</div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3>📊 近30天使用趋势</h3>
+            <canvas id="usageChart" height="200"></canvas>
+        </div>
+
+        <div class="table-card">
+            <h3>👥 用户管理 <span class="sub">可禁用账号、设置总次数限制、每日限额</span></h3>
+            <div style="overflow-x:auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>注册时间</th>
+                            <th>使用/今日</th>
+                            <th>总次数限制</th>
+                            <th>每日限额</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr><td colspan="9" style="text-align:center;color:#999;">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chartInstance = null;
+
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast' + (isError ? ' error' : '');
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2500);
+        }
+
+        async function toggleUser(id) {
+            try {
+                const res = await fetch(`/api/admin/user/${id}/toggle`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    loadStats();
+                } else {
+                    showToast(data.message, true);
+                }
+            } catch(e) {
+                showToast('操作失败', true);
+            }
+        }
+
+        async function saveLimit(id) {
+            const maxUses = document.getElementById(`max_${id}`).value;
+            const daily = document.getElementById(`daily_${id}`).value;
+            try {
+                const res = await fetch(`/api/admin/user/${id}/limit`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        max_uses: maxUses === '' ? -1 : parseInt(maxUses),
+                        daily_limit: daily === '' ? -1 : parseInt(daily)
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('限额已更新');
+                } else {
+                    showToast(data.message, true);
+                }
+            } catch(e) {
+                showToast('操作失败', true);
+            }
+        }
+
+        function renderLimitInput(value, id, field) {
+            const v = value === -1 || value === null ? '' : value;
+            const ph = value === -1 || value === null ? '不限' : '';
+            return `<input class="limit-input" id="${field}_${id}" type="number" min="-1" value="${v}" placeholder="${ph}">`;
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/admin/stats');
+                const data = await res.json();
+                
+                document.getElementById('todayGen').textContent = data.today_generates;
+                document.getElementById('todayUsers').textContent = data.today_users;
+                document.getElementById('totalUsers').textContent = data.total_users;
+                document.getElementById('totalGen').textContent = data.total_generates;
+                
+                const tbody = document.getElementById('userTableBody');
+                if (data.users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;">暂无用户</td></tr>';
+                } else {
+                    tbody.innerHTML = data.users.map(u => {
+                        const disabled = u.disabled === 1;
+                        const statusBadge = disabled ? '<span class="badge-disabled">已禁用</span>' : '<span style="color:#2ecc71;">✓ 正常</span>';
+                        const toggleBtn = disabled
+                            ? `<button class="btn-sm btn-success-sm" onclick="toggleUser(${u.id})">启用</button>`
+                            : `<button class="btn-sm btn-danger-sm" onclick="toggleUser(${u.id})">禁用</button>`;
+                        const roleBadge = u.is_admin ? '<span class="badge-admin">管理员</span>' : '<span class="badge-user">用户</span>';
+                        
+                        return `
+                            <tr style="${disabled ? 'opacity:0.6;' : ''}">
+                                <td>${u.id}</td>
+                                <td style="font-weight:600;">${u.username}</td>
+                                <td>${roleBadge}</td>
+                                <td>${statusBadge}</td>
+                                <td style="font-size:0.85rem;">${u.created_at}</td>
+                                <td style="white-space:nowrap;">${u.total_usage} / ${u.today_usage}</td>
+                                <td>${renderLimitInput(u.max_uses, u.id, 'max')}</td>
+                                <td>${renderLimitInput(u.daily_limit, u.id, 'daily')}</td>
+                                <td>
+                                    <div class="action-group">
+                                        ${toggleBtn}
+                                        ${u.is_admin ? '' : `<button class="btn-sm btn-save-sm" onclick="saveLimit(${u.id})">保存</button>`}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+                
+                const stats = data.daily_stats || [];
+                const labels = stats.map(s => s.date).reverse();
+                const genData = stats.map(s => s.generate_count).reverse();
+                const userData = stats.map(s => s.active_users).reverse();
+                
+                const ctx = document.getElementById('usageChart').getContext('2d');
+                if (chartInstance) chartInstance.destroy();
+                
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '生成次数',
+                                data: genData,
+                                borderColor: '#2ecc71',
+                                backgroundColor: 'rgba(46,204,113,0.1)',
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 4
+                            },
+                            {
+                                label: '活跃用户',
+                                data: userData,
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52,152,219,0.1)',
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 4,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: { intersect: false, mode: 'index' },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { stepSize: 1 } }
+                        }
+                    }
+                });
+            } catch(e) {
+                console.error('加载数据失败:', e);
+            }
+        }
+
+        loadStats();
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>
